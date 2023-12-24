@@ -1,0 +1,45 @@
+:root {
+    --green-button: #10ee10;
+    --yellow-button: #eeee11;
+    --red-button: #ee1010;
+}
+
+body {
+    background-color: #333;
+    color: #000;
+    font-size: 7rem;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.circle-button {
+    border-radius: 50%;
+    width: 46rem;
+    height: 46rem;
+}
+
+.green {
+    background-color: var(--green-button);
+}
+
+.red {
+    background-color: var(--red-button);
+}
+
+.yellow {
+    background-color: var(--yellow-button);
+}
+
+.circle-text {
+    text-align: center;
+    transform: translateY(17rem);
+}
+
+.window-center {
+    margin: auto;
+    width: max-content;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
