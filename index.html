@@ -2,24 +2,49 @@
 <html>
 	<head>
 		<title>JS API Test</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="index.css">
 	</head>
 	<body>
-        <div id="jsTest">
-            <script src="js-api.js"></script>
-        </div>
-        <div class="window-center">
-            <a href="javascript:void(0);" onclick="confirmPress('Trazadone', 'http://127.0.0.1:5000/')">
-                <div class="circle-button red" id="traButton">
-                    <div class="circle-text">Trazadone</div>
+        <script src="js-api.js"></script>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid" style="text-align:left">
+                <div style="width:0.8rem"></div>
+                <a href="http://192.168.15.33:8000/" class="navbar-brand">Max's Meds</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a href="http://192.168.15.33:8000/history" class="nav-link">History</a>
+                        </li>
+                    </ul>
                 </div>
-            </a>
-            <div style="height: 5rem;"></div>
-            <a href="javascript:void(0);" onclick="confirmPress('Gabapentin', 'http://127.0.0.1:5000/')">
-                <div class="circle-button green" id="gabButton">
-                    <div class="circle-text">Gabapentin</div>
+            </div>
+        </nav>
+        <div class="container" id="meds-updater">
+            <div class="row">
+                <div class="col-12 col-lg-6">
+                    <div class="window-center">
+                        <a href="javascript:void(0);" onclick="confirmPress('Trazadone', 'http://192.168.15.33:5000/')">
+                            <div class="circle-button" id="traButton">
+                                <div class="circle-text">Trazadone</div>
+                            </div>
+                        </a>
+                    </div>
                 </div>
-            </a>
+                <div class="col-12 col-lg-6">
+                    <div class="window-center">
+                        <a href="javascript:void(0);" onclick="confirmPress('Gabapentin', 'http://192.168.15.33:5000/')">
+                            <div class="circle-button" id="gabButton">
+                                <div class="circle-text">Gabapentin</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 	</body>
 </html>

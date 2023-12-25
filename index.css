@@ -7,14 +7,14 @@
 body {
     background-color: #333;
     color: #000;
-    font-size: 7rem;
+    font-size: 4em;
     font-family:Verdana, Geneva, Tahoma, sans-serif;
 }
 
 .circle-button {
     border-radius: 50%;
-    width: 46rem;
-    height: 46rem;
+    width: 420px;
+    height: 420px;
 }
 
 .green {
@@ -31,10 +31,11 @@ body {
 
 .circle-text {
     text-align: center;
-    transform: translateY(17rem);
+    transform: translateY(160px);
 }
 
 .window-center {
+    padding: 20px;
     margin: auto;
     width: max-content;
 }
@@ -42,4 +43,10 @@ body {
 a {
     text-decoration: none;
     color: inherit;
+}
+
+.logo-text {
+    font-size: 36px;
+    text-align: left;
+    width: 70%;
 }

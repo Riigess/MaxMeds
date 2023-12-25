@@ -14,6 +14,7 @@ def home():
 	conn = sqlite.connect('database.sqlite')
 	cur = conn.cursor()
 
+	#Every 8-12 hours
 	if request.method == 'GET':
 		cur.execute('SELECT * FROM MaxMeds WHERE med_name="Trazadone" ORDER BY timestamp DESC LIMIT 2;')
 		resp = cur.fetchall()
@@ -43,4 +44,35 @@ def home():
 		conn.commit()
 		return 'OK'
 
-app.run(debug=True)
+def convert_timestamp(t:str):
+	mdy = t.split(' ')[0].split('-')
+	new_timestamp = '-'.join([mdy[-1], mdy[0], mdy[1]]) + 'T' + t.split(' ')[1]
+	return new_timestamp
+
+@app.route('/trazadone', methods=['GET'])
+def get_trazadone():
+	conn = sqlite.connect('database.sqlite')
+	cur = conn.cursor()
+	cur.execute("SELECT * FROM MaxMeds WHERE med_name='Trazadone' ORDER BY timestamp DESC LIMIT 1;")
+	headers = [i[0] for i in cur.description]
+	resp = cur.fetchone()
+	dict = {}
+	for i in range(len(headers)):
+		dict.update({headers[i]:resp[i]})
+	dict['timestamp'] = convert_timestamp(dict['timestamp'])
+	return json.dumps(dict)
+
+@app.route('/gabapentin', methods=['GET'])
+def get_gabapentin():
+	conn = sqlite.connect('database.sqlite')
+	cur = conn.cursor()
+	cur.execute("SELECT * FROM MaxMeds WHERE med_name='Gabapentin' ORDER BY timestamp DESC LIMIT 1;")
+	headers = [i[0] for i in cur.description]
+	resp = cur.fetchone()
+	dict = {}
+	for i in range(len(headers)):
+		dict.update({headers[i] : resp[i]})
+	dict['timestamp'] = convert_timestamp(dict['timestamp'])
+	return json.dumps(dict)
+
+app.run(host='192.168.15.33', debug=True)
