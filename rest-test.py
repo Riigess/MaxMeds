@@ -75,4 +75,4 @@ def get_gabapentin():
 	dict['timestamp'] = convert_timestamp(dict['timestamp'])
 	return json.dumps(dict)
 
-app.run(host='192.168.15.33', debug=True)
+app.run(host='192.168.15.40', debug=True)
