@@ -88,7 +88,7 @@ function confirmPress(buttonName, url) {
 function onLoad() {
     // let traButton = document.getElementById("traButton");
     // let gabButton = document.getElementById("gabButton");
-    getResult("http://192.168.15.33:5000/trazadone").then(response => {
+    getResult("http://192.168.15.40:5000/trazadone").then(response => {
         let d = new Date();
         let hour = 3600;
         let h8 = hour * 8;
@@ -106,7 +106,7 @@ function onLoad() {
         }
         console.log("TRAZADONE:\n" + response + "\ntimestamp:" + JSON.parse(response)['timestamp'] + "\nparsedDate: " + parsedDate);
     });
-    getResult("http://192.168.15.33:5000/gabapentin").then(response => {
+    getResult("http://192.168.15.40:5000/gabapentin").then(response => {
         let d = new Date();
         let hour = 3600;
         let h8 = hour * 8;
