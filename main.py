@@ -14,7 +14,11 @@ CORS(app)
 
 #Get device IP Address
 def get_ip_addr():
-    ipcon = str(subprocess.run('ifconfig', capture_output=True).stdout)[2:-1]
+    ipcon = ''
+    if 'Darwin' in os.uname().sysname:
+        ipcon = str(subprocess.run('ifconfig', capture_output=True).stdout)[2:-1]
+    else:
+        ipcon = str(subprocess.run('/usr/sbin/ifconfig', capture_output=True).stdout)[2:-1]
     ipcon = ipcon.replace("\\r", "").replace("\\n", "\n").replace("\n\n\n", "\n").replace("\n\n", "\n")
     # ip_addr = ipcon[ipcon.index('IPv4 Address'):ipcon.index('Subnet')].split(": ")[1].split("\n")[0]
     ip_addr = ''
