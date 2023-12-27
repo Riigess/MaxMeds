@@ -73,7 +73,7 @@ def index_css():
 
 @app.route('/js-api.js')
 def index_js():
-    f = open('templates/js-api.js','r')
+    f = open('static/js-api.js','r')
     d = f.read().replace("http://<IP_ADDRESS>:5000", f"http://{get_ip_addr()}:20080")
     f.close()
     return d
