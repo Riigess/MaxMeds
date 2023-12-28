@@ -84,6 +84,30 @@ function confirmPress(buttonName, url) {
     }
 }
 
+function publishTrazadone() {
+    getResult("http://<IP_ADDRESS>:5000/trazadone").then(response => {
+        let lastUpdate = document.getElementById("last-updated-at");
+        // lastUpdate.textContent = response;
+        var timestampConv = JSON.parse(response)['timestamp'];
+        timestampConv = timestampConv.replace("T", " ");
+        let spl = timestampConv.split(" ")[0].split("-");
+        let intTSConv = parseInt(timestampConv.split(" ")[1].split(":")[0]);
+        let timestampConvPrefix = spl[1] + "-" + spl[2] + "-" + spl[0] + " ";
+        if(intTSConv < 13 && intTSConv > 0) {
+            timestampConv = timestampConvPrefix + timestampConv.split(" ")[1] + " AM";
+        } else if(intTSConv < 24) {
+            let min = timestampConv.split(" ")[1].split(":")[1];
+            let sec = timestampConv.split(" ")[1].split(":")[2];
+            timestampConv = timestampConvPrefix + (intTSConv - 12) + ":" + min + ":" + sec + " PM";
+        } else {
+            let min = timestampConv.split(" ")[1].split(":")[1];
+            let sec = timestampConv.split(" ")[2].split(":")[2];
+            timestampConv = timestampConvPrefix + "00:" + min + ":" + sec + " AM";
+        }
+        lastUpdate.innerText = "Last given at: " + timestampConv;
+    });
+}
+
 function onLoad() {
     getResult("http://<IP_ADDRESS>:5000/trazadone").then(response => {
         let d = new Date();
@@ -123,5 +147,4 @@ function onLoad() {
     })
 }
 onLoad();
-
-console.log(document.getRootNode());
+publishTrazadone();

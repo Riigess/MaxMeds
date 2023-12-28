@@ -90,5 +90,9 @@ def trazadone():
 def gabapentin():
     return get_medication('Gabapentin', 1)
 
+# @app.route('/history')
+# def history_page():
+#     return render_template('history.html')
+
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=20080)
+    app.run(debug=True, host=f'{get_ip_addr()}', port=20080)
