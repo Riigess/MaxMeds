@@ -33,17 +33,31 @@ def convert_timestamp(t:str):
 	new_timestamp = '-'.join([mdy[-1], mdy[0], mdy[1]]) + 'T' + t.split(' ')[1]
 	return new_timestamp
 
-def get_medication(med_name:str, limit:int):
+def get_medication(med_name:str, limit:int=-1):
     conn = sqlite.connect('database.sqlite')
     cur = conn.cursor()
-    cur.execute(f"SELECT * FROM MaxMeds WHERE med_name='{med_name}' ORDER BY timestamp DESC LIMIT {limit}")
+    if limit != -1:
+        cur.execute(f"SELECT * FROM MaxMeds WHERE med_name='{med_name}' ORDER BY timestamp DESC LIMIT {limit}")
+    elif '%' in med_name and len(med_name) == 1:
+        cur.execute("SELECT * FROM MaxMeds ORDER BY timestamp DESC")
+    else:
+        cur.execute(f"SELECT * FROM MaxMeds WHERE med_name='{med_name}' ORDER BY timestamp DESC")
     headers = [i[0] for i in cur.description]
-    resp = cur.fetchone()
-    dict = {}
-    for i in range(len(headers)):
-        dict.update({headers[i]:resp[i]})
-    dict['timestamp'] = convert_timestamp(dict['timestamp'])
-    return json.dumps(dict)
+    resp = cur.fetchall()
+    if limit == -1:
+        limit = len(resp)
+    to_ret = []
+    for i in range(limit):
+        dict = {}
+        for j in range(len(headers)):
+            dict.update({headers[j]:resp[i][j]})
+        dict['timestamp'] = convert_timestamp(dict['timestamp'])
+        to_ret.append(dict)
+    print("To Return:", to_ret)
+    #TODO: Create above dict to handle an array of dictionary responses from the SQLite table..
+    if limit == 1:
+        return json.dumps(to_ret[0])
+    return json.dumps({"data":to_ret})
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -68,6 +82,10 @@ def index():
         conn.commit()
         return 'OK'
 
+@app.route('/history')
+def history():
+    return render_template('history.html')
+
 @app.route('/index.css')
 def index_css():
     f = open('static/index.css','r')
@@ -81,6 +99,21 @@ def index_js():
     d = f.read().replace("http://<IP_ADDRESS>:5000", f"http://{get_ip_addr()}:20080")
     f.close()
     return d
+
+@app.route('/history.js')
+def history_js():
+    f = open('static/history.js')
+    d = f.read().replace("http://<IP_ADDRESS>:5000", f"http://{get_ip_addr()}:20080")
+    f.close()
+    return d
+
+@app.route('/all/<med_name>')
+def get_all_med(med_name:str):
+    return get_medication(med_name)
+
+@app.route('/all')
+def get_all():
+    return get_medication('%')
 
 @app.route('/trazadone')
 def trazadone():

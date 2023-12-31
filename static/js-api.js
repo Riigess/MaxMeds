@@ -67,45 +67,44 @@ function confirmPress(buttonName, url) {
     let d = new Date();
     let conf = confirm("Confirm Max was given " + buttonName + " on " + getDateTimeString(d));
     if(conf) {
-        postResult(d, buttonName, url);
-        if(buttonName === "Trazadone") {
-            let traButton = document.getElementById("traButton");
-            traButton.classList.remove("green");
-            traButton.classList.remove("red");
-            traButton.classList.add("red");
-        } else {
-            let gabButton = document.getElementById("gabButton");
-            gabButton.classList.remove("green");
-            gabButton.classList.remove("red");
-            gabButton.classList.add("red");
-        }
+        postResult(d, buttonName, url).then(r => {
+            location.reload();
+        });
     } else {
         getResult(url).then(response=>console.log(response));
     }
 }
 
-function publishTrazadone() {
-    getResult("http://<IP_ADDRESS>:5000/trazadone").then(response => {
-        let lastUpdate = document.getElementById("last-updated-at");
-        // lastUpdate.textContent = response;
-        var timestampConv = JSON.parse(response)['timestamp'];
-        timestampConv = timestampConv.replace("T", " ");
-        let spl = timestampConv.split(" ")[0].split("-");
-        let intTSConv = parseInt(timestampConv.split(" ")[1].split(":")[0]);
-        let timestampConvPrefix = spl[1] + "-" + spl[2] + "-" + spl[0] + " ";
-        if(intTSConv < 13 && intTSConv > 0) {
-            timestampConv = timestampConvPrefix + timestampConv.split(" ")[1] + " AM";
-        } else if(intTSConv < 24) {
-            let min = timestampConv.split(" ")[1].split(":")[1];
-            let sec = timestampConv.split(" ")[1].split(":")[2];
-            timestampConv = timestampConvPrefix + (intTSConv - 12) + ":" + min + ":" + sec + " PM";
+function convertDate(time) {
+    var date = "";
+    let fTime = time.split("T")[1];
+    if(time.split("T")[0].split("-")[0].length > 2) {
+        let splDate = time.split("T")[0].split("-");
+        date = splDate[1] + "-" + splDate[2] + "-" + splDate[0];
+    } else {
+        date = time.split("T")[0];
+    }
+    return date + "T" + fTime;
+}
+
+function convertTime(time) {
+    var toRet = time.split("T")[0];
+    let fTime = time.split("T")[1];
+    let min = fTime.split(":")[1];
+    let sec = fTime.split(":")[2];
+    let intTSConv = parseInt(fTime.split(":")[0]);
+    if(intTSConv < 13 && intTSConv > 0) {
+        toRet = toRet + "T" + fTime + " AM";
+    } else if (intTSConv < 24) {
+        if(intTSConv < 20) {
+            toRet = toRet + "T0" + (intTSConv-12) + ":" + min + ":" + sec + " PM";
         } else {
-            let min = timestampConv.split(" ")[1].split(":")[1];
-            let sec = timestampConv.split(" ")[2].split(":")[2];
-            timestampConv = timestampConvPrefix + "00:" + min + ":" + sec + " AM";
+            toRet = toRet + "T" + (intTSConv - 12) + ":" + min + ":" + sec + " PM";
         }
-        lastUpdate.innerText = "Last given at: " + timestampConv;
-    });
+    } else {
+        toRet = toRet + "T00:" + min + ":" + sec + " AM";
+    }
+    return toRet;
 }
 
 function onLoad() {
@@ -114,18 +113,33 @@ function onLoad() {
         let hour = 3600;
         let h8 = hour * 8;
         let h12 = hour * 12;
-        let parsedDate = Date.parse(JSON.parse(response)["timestamp"])/1000;
         let traButton = document.getElementById("traButton");
-        if (((d/1000) - parsedDate) > h8) {
-            traButton.classList.add("yellow");
+
+        //Parsing multi-response data..
+        var parsedDates = [];
+        console.log("Response: " + response);
+        let jsonResponse = JSON.parse(response);
+        let dates = [];
+        for(let i = 0; i < jsonResponse['data'].length; i++) {
+            let lastDate = Date.parse(jsonResponse["data"][i]["timestamp"]) / 1000;
+            parsedDates.push(lastDate);
+            let adjustedDate = convertTime(convertDate(jsonResponse["data"][i]["timestamp"]));
+            dates.push(adjustedDate.replace("T", " "));
         }
-        if(((d/1000) - parsedDate) > h12) {
-            traButton.classList.remove("yellow");
+
+        //Setting up last-updated-at text for Trazadone..
+        let lastUpdatedAt = document.getElementById("last-updated-at");
+        lastUpdatedAt.innerHTML = '<div><div style="text-align: left; position:absolute;">Last Taken At: </div><div style="text-align:right;"><div>' + dates[0] + '</div><div>' + dates[1] + '</div></div></div>';
+
+        // For multi-response timestamps...
+        let measuredDate = parsedDates[1];
+        if((d/1000) - measuredDate > h12) {
             traButton.classList.add("green");
+        } else if((d/1000) - measuredDate > h8) {
+            traButton.classList.add("yellow");
         } else {
             traButton.classList.add("red");
         }
-        console.log("TRAZADONE:\n" + response + "\ntimestamp:" + JSON.parse(response)['timestamp'] + "\nparsedDate: " + parsedDate);
     });
     getResult("http://<IP_ADDRESS>:5000/gabapentin").then(response => {
         let d = new Date();
@@ -134,17 +148,14 @@ function onLoad() {
         let h12 = hour * 12;
         let parsedDate = Date.parse(JSON.parse(response)["timestamp"])/1000;
         let gabButton = document.getElementById("gabButton");
-        if(((d/1000) - parsedDate) > h8) {
-            gabButton.classList.add("yellow");
-        }
         if(((d/1000) - parsedDate) > h12) {
-            gabButton.classList.remove("yellow");
             gabButton.classList.add("green");
+        } else if(((d/1000) - parsedDate) > h8) {
+            gabButton.classList.add("yellow");
         } else {
             gabButton.classList.add("red");
         }
         console.log("GABAPENTIN:\ntimestamp:" + JSON.parse(response)['timestamp'] + "\nparsedDate: " + parsedDate);
     })
 }
-onLoad();
-publishTrazadone();
+// onLoad();
