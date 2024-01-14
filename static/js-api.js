@@ -77,32 +77,32 @@ function confirmPress(buttonName, url) {
 
 function convertDate(time) {
     var date = "";
-    let fTime = time.split("T")[1];
-    if(time.split("T")[0].split("-")[0].length > 2) {
-        let splDate = time.split("T")[0].split("-");
+    let fTime = time.split(" ")[1];
+    if(time.split(" ")[0].split("-")[0].length > 2) {
+        let splDate = time.split(" ")[0].split("-");
         date = splDate[1] + "-" + splDate[2] + "-" + splDate[0];
     } else {
-        date = time.split("T")[0];
+        date = time.split(" ")[0];
     }
-    return date + "T" + fTime;
+    return date + " " + fTime;
 }
 
 function convertTime(time) {
-    var toRet = time.split("T")[0];
-    let fTime = time.split("T")[1];
+    var toRet = time.split(" ")[0];
+    let fTime = time.split(" ")[1];
     let min = fTime.split(":")[1];
     let sec = fTime.split(":")[2];
     let intTSConv = parseInt(fTime.split(":")[0]);
     if(intTSConv < 13 && intTSConv > 0) {
-        toRet = toRet + "T" + fTime + " AM";
+        toRet = toRet + " " + fTime + " AM";
     } else if (intTSConv < 24) {
         if(intTSConv < 20) {
-            toRet = toRet + "T0" + (intTSConv-12) + ":" + min + ":" + sec + " PM";
+            toRet = toRet + " 0" + (intTSConv-12) + ":" + min + ":" + sec + " PM";
         } else {
-            toRet = toRet + "T" + (intTSConv - 12) + ":" + min + ":" + sec + " PM";
+            toRet = toRet + " " + (intTSConv - 12) + ":" + min + ":" + sec + " PM";
         }
     } else {
-        toRet = toRet + "T00:" + min + ":" + sec + " AM";
+        toRet = toRet + " 00:" + min + ":" + sec + " AM";
     }
     return toRet;
 }
@@ -146,6 +146,7 @@ function onLoad() {
         let hour = 3600;
         let h8 = hour * 8;
         let h12 = hour * 12;
+        console.log(response)
         let parsedDate = Date.parse(JSON.parse(response)["timestamp"])/1000;
         let gabButton = document.getElementById("gabButton");
         if(((d/1000) - parsedDate) > h12) {
