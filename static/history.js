@@ -12,6 +12,7 @@ function addRow(id, med_name, timestamp, hasDelete, i) {
     let hColC = document.createElement("div");
     hColC.classList.add("col-4");
     hColC.textContent = timestamp;
+    // console.log("Timestamp: " + timestamp);
     let br = document.createElement("div");
     var backgroundColor = "background: #ccc";
     if(i % 2 == 0) {
@@ -23,20 +24,49 @@ function addRow(id, med_name, timestamp, hasDelete, i) {
     headerRow.appendChild(hColC);
     if(hasDelete) {
         // Create Edit button
+        let modal = document.getElementById("edit-modal"); //Needed for edit button -- overlay
+        let editDate = document.getElementById("edit-date");
+        let editTime = document.getElementById("edit-time");
         let editCol = document.createElement("div");
         editCol.classList.add("col-1");
         let editColAnch = document.createElement("a");
         editColAnch.href = "javascript:void(0)";
-        editColAnch.onclick = function() { alert('test') };
-        // let editColImg = document.createElement("img");
-        // editColImg.src = "http://<IP_ADDRESS>:5000/static/images/edit.svg";
-        // editColImg.style.width = "30px";
-        // editColImg.style.height = "30px";
+        editColAnch.onclick = function() {
+            modal.style.display = "block";
+            let strDateSpl = timestamp.split(' ')[0].split('-');
+            let strDate = strDateSpl[2] + '-' + strDateSpl[0] + '-' + strDateSpl[1];
+            let strTimeSpl = timestamp.split(' ')[1].split(':');
+            var hour = parseInt(strTimeSpl[0]);
+            if (timestamp.split(' ')[2] == "PM") {
+                hour += 12;
+            }
+            hour = hour.toString();
+            let strTime = hour + ':' + strTimeSpl[1];
+            console.log("strDate: " + strDate + " | strTime: " + strTime);
+            editDate.setAttribute("value", strDate);
+            editTime.setAttribute("value", strTime);
+        };
+        let modalCloseBtn = document.getElementsByClassName("close")[0];
+        modalCloseBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+        let modalSubmitBtn = document.getElementsByClassName("edit-submit-btn")[0];
+        modalSubmitBtn.onclick = function() {
+            modal.style.display = "none";
+            deleteEntry(id, med_name, timestamp);
+            let updatedDateTime = editDate.getAttribute("value") + "T" + editTime.getAttribute("value") + "Z";
+            let newDate = Date.parse(updatedDateTime);
+            let formattedDate = new Date(newDate);
+            console.log("Updating entry " + id + " with newDate " + formattedDate.toDateString());
+            postResult(formattedDate, med_name, "http://<IP_ADDRESS>:5000/").then(r => {
+                location.reload();
+            });
+        }
+
         let editColImg = document.createElement("object");
-        editColImg.data = "http://<IP_ADDRESS>:5000/static/images/edit.svg";
+        editColImg.data = "http://<IP_ADDRESS>:5000/static/images/edit.png";
         editColImg.style.width = "30px";
         editColImg.style.height = "30px";
-        console.log("%j", editColAnch);
         editColAnch.appendChild(editColImg);
         editCol.appendChild(editColAnch);
         headerRow.appendChild(editCol);

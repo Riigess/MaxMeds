@@ -16,6 +16,7 @@ async function postResult(dateTime, drug, url) {
         method: "POST",
         headers: {
             "timestamp": getDateTimeDBString(dateTime),
+            // "timestamp": dateTime,
             "medication": drug,
             "Content-type": "application/json; charset=UTF-8",
             "Access-Control-Allow-Origin": "*",
@@ -117,7 +118,7 @@ function onLoad() {
 
         //Parsing multi-response data..
         var parsedDates = [];
-        console.log("Response: " + response);
+        // console.log("Response: " + response);
         let jsonResponse = JSON.parse(response);
         let dates = [];
         for(let i = 0; i < jsonResponse['data'].length; i++) {
@@ -146,7 +147,7 @@ function onLoad() {
         let hour = 3600;
         let h8 = hour * 8;
         let h12 = hour * 12;
-        console.log(response)
+        // console.log(response);
         let parsedDate = Date.parse(JSON.parse(response)["timestamp"])/1000;
         let gabButton = document.getElementById("gabButton");
         if(((d/1000) - parsedDate) > h12) {

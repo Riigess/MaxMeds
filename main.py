@@ -21,14 +21,21 @@ def get_ip_addr():
         ipcon = str(subprocess.run('/usr/sbin/ifconfig', capture_output=True).stdout)[2:-1]
     ipcon = ipcon.replace("\\r", "").replace("\\n", "\n").replace("\n\n\n", "\n").replace("\n\n", "\n")
     # ip_addr = ipcon[ipcon.index('IPv4 Address'):ipcon.index('Subnet')].split(": ")[1].split("\n")[0]
+    # ip_addr = '192.168.15.39' #I don't like this, but it needs to get the host adapter's IP address...maybe I can just do a pass-through from Docker?
     ip_addr = ''
     if '10.0.1' in ipcon:
         ip_addr = ipcon[ipcon.index('10.0.1'):].split(' ')[0]
     elif '192.168.15' in ipcon:
         ip_addr = ipcon[ipcon.index('192.168.15'):].split(' ')[0]
+    elif '172.22.0.' in ipcon:
+        ip_addr = ipcon[ipcon.index('172.22.0.'):].split(' ')[0]
+    print("IP ADDRESS:", ip_addr)
     return ip_addr
 
-def convert_timestamp(time:str):
+ip_addr = get_ip_addr()
+port = 20080
+
+def convert_timestamp(time:int):
     t = datetime.fromtimestamp(time/1000)
 	# mdy = t.split(' ')[0].split('-')
 	# new_timestamp = '-'.join([mdy[-1], mdy[0], mdy[1]]) + 'T' + t.split(' ')[1]
@@ -69,23 +76,26 @@ def index():
     cur = conn.cursor()
 
     if request.method == 'GET':
-        return render_template('index.html')
+        return render_template('index.html').replace("<IP_ADDRESS>:5000", f"{ip_addr}:{port}")
     elif request.method == 'POST':
+        print(request.headers)
         t = request.headers['timestamp']
         date_arr = t.split(' ')[0].split('-')
         date_arr += t.split(' ')[1].split(':')
         date_arr = [int(i) for i in date_arr]
         date_arr[0] += 1
         t = datetime(date_arr[2], date_arr[0], date_arr[1], date_arr[3], date_arr[4], date_arr[5])
+        print("DATETIME: ", t)
         med = request.headers['medication']
-        format_str = t.strftime("%Y-%m-%d %H:%M:%S")
+        # format_str = t.strftime("%Y-%m-%d %H:%M:%S")
+        format_str = t.timestamp() * 1000
         cur.execute(f"INSERT INTO MaxMeds(med_name, timestamp) VALUES('{med}', '{format_str}')")
         conn.commit()
         return 'OK'
 
 @app.route('/history')
 def history():
-    return render_template('history.html')
+    return render_template('history.html').replace("<IP_ADDRESS>:5000", f"{ip_addr}:{port}")
 
 ################################
 #      GET STATIC FILES        #
@@ -101,14 +111,14 @@ def index_css():
 @app.route('/js-api.js')
 def index_js():
     f = open('static/js-api.js','r')
-    d = f.read().replace("http://<IP_ADDRESS>:5000", f"http://{get_ip_addr()}:20080")
+    d = f.read().replace("http://<IP_ADDRESS>:5000", f"http://{ip_addr}:{port}")
     f.close()
     return d
 
 @app.route('/history.js')
 def history_js():
     f = open('static/history.js')
-    d = f.read().replace("http://<IP_ADDRESS>:5000", f"http://{get_ip_addr()}:20080")
+    d = f.read().replace("http://<IP_ADDRESS>:5000", f"http://{ip_addr}:{port}")
     f.close()
     return d
 
@@ -143,10 +153,9 @@ def get_image(image_name:str):
         if image_name in os.listdir('./static/images/'):
             f = open('static/images/' + image_name, 'rb')
             d = f.read()
-            print("Return data: ", d)
+            # print("Return data: ", d)
             f.close()
             return d
-    print("Return data:")
     return b''
 
 ################################
@@ -156,13 +165,17 @@ def get_image(image_name:str):
 def delete_item(id:int):
     conn = sqlite.connect('database.sqlite')
     cur = conn.cursor()
+    cur.execute(f"SELECT * FROM MaxMeds WHERE id={id}")
+    d = cur.fetchall()
+    print(f"\t{id} data:", d)
     cur.execute(f"DELETE FROM MaxMeds WHERE id={id}")
     conn.commit()
     return {"code":200}
 
 @app.route('/delete/<id>')
 def delete_by_id(id:int):
+    print(f"Queuing {id} for deletion")
     return delete_item(id)
 
 if __name__ == "__main__":
-    app.run(debug=True, host=f'{get_ip_addr()}', port=20080)
+    app.run(debug=True, host=ip_addr, port=port)

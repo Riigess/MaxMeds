@@ -11,20 +11,26 @@
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container-fluid" style="text-align:left">
                 <div style="width:0.8rem"></div>
-                <!-- TODO: Automatically update IP Address entered here... -->
-                <a href="http://192.168.15.40:20080/" class="navbar-brand">Max's Meds</a>
-                <!-- <a href="http://192.168.15.33:20080/" class="navbar-brand">Max's Meds</a> -->
+                <a href="http://<IP_ADDRESS>:5000/" class="navbar-brand">Max's Meds</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <!-- TODO: Automatically update IP Address entered here... -->
-                            <a href="http://192.168.15.40:20080/history" class="nav-link">History</a>
-                            <!-- <a href="http://192.168.15.33:20080/history" class="nav-link">History</a> -->
+                            <a href="http://<IP_ADDRESS>:5000/history" class="nav-link">History</a>
                         </li>
                     </ul>
+                </div>
+                <div id="edit-modal" class="modal">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <input type="date" id="edit-date" name="date-entry" value="2024-03-17" min="2023-11-1" max="2025-1-1" />
+                        <input type="time" id="edit-time" name="time-entry" value="12:00" min="00:00" max="23:59" />
+                        <span class="edit-submit">
+                            <button class="edit-submit-btn">SUBMIT</button>
+                        </span>
+                    </div>
                 </div>
             </div>
         </nav>

@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: python3 main.py
+    ports:
+      - 20080:20080
+    volumes:
+      - .:/code
+    environment:
+      FLASK_DEBUG: "true"
+  # flask:
+  #   image: webapp-flask
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile-flask
+  #   volumes:
+  #     - "./:/app:z"
+  #     - "/etc/localtime:/etc/localtime:ro"
+  #   environment:
+  #     - "EXTERNAL_IP=${EXTERNAL_IP}"
+  
+  # nginx:
+  #   image: webapp-nginx
+  #   build:
+  #     context: .
+  #     build:
+  #       context: .
+  #       dockerfile: Dockerfile-nginx
+  #     ports:
+  #       - 20080:80
+  #     depends_on:
+  #       - flask
