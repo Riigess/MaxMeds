@@ -8,15 +8,22 @@ from datetime import datetime
 import subprocess
 import os
 import socket
+import yaml
 
-import argparse
+# import argparse
 
-parser = argparse.ArgumentParser("MaxMeds")
-parser.add_argument("--host-port", "--port", required=False, default=20080, help="Specifies what port to use for the server")
-parser.add_argument("--wsgi-port", required=False, help="Specifies what port to give out to other devices (ex. what to replace the 5000 in <IP_ADDRESS>:5000 with)")
+# parser = argparse.ArgumentParser("MaxMeds")
+# parser.add_argument("--host-port", "--port", required=False, default=20080, help="Specifies what port to use for the server")
+# parser.add_argument("--wsgi-port", required=False, help="Specifies what port to give out to other devices (ex. what to replace the 5000 in <IP_ADDRESS>:5000 with)")
 
 app = Flask(__name__)
 CORS(app)
+
+def get_config():
+    f = open("settings.yml", "r")
+    d = yaml.safe_load(f.read())
+    f.close()
+    return d
 
 #Get device IP Address
 def get_ip_addr():
@@ -26,8 +33,6 @@ def get_ip_addr():
     else:
         ipcon = str(subprocess.run('/usr/sbin/ifconfig', capture_output=True).stdout)[2:-1]
     ipcon = ipcon.replace("\\r", "").replace("\\n", "\n").replace("\n\n\n", "\n").replace("\n\n", "\n")
-    # ip_addr = ipcon[ipcon.index('IPv4 Address'):ipcon.index('Subnet')].split(": ")[1].split("\n")[0]
-    # ip_addr = '192.168.15.39' #I don't like this, but it needs to get the host adapter's IP address...maybe I can just do a pass-through from Docker?
     ip_addr = ''
     if '10.0.1' in ipcon:
         ip_addr = ipcon[ipcon.index('10.0.1'):].split(' ')[0]
@@ -38,22 +43,21 @@ def get_ip_addr():
     print("IP ADDRESS:", ip_addr)
     return ip_addr
 
-args = parser.parse_args().__dict__
+# args = parser.parse_args().__dict__
+args = get_config()
 
 #Get setup stuff for wsgi/application
 ip_addr = get_ip_addr()
 #application port data
-int_port = int(args["host_port"]) if "host_port" in args else 20080
+int_port = int(args["host-port"]) if "host-port" in args else 20080
 #wsgi port data
 port = int_port
-if "wsgi_port" in args:
-    if type(args["wsgi_port"]) is not type(None):
-        port = int(args["wsgi_port"])
+if "wsgi-port" in args:
+    if type(args["wsgi-port"]) is not type(None):
+        port = int(args["wsgi-port"])
 
 def convert_timestamp(time:int):
     t = datetime.fromtimestamp(time/1000)
-	# mdy = t.split(' ')[0].split('-')
-	# new_timestamp = '-'.join([mdy[-1], mdy[0], mdy[1]]) + 'T' + t.split(' ')[1]
     new_timestamp = t.strftime("%Y-%m-%d %H:%M:%S")
     return new_timestamp
 
