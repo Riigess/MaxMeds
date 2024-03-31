@@ -33,7 +33,8 @@ def get_ip_addr():
     return ip_addr
 
 ip_addr = get_ip_addr()
-port = 20080
+int_port = 20081
+port=20080
 
 def convert_timestamp(time:int):
     t = datetime.fromtimestamp(time/1000)
@@ -178,4 +179,4 @@ def delete_by_id(id:int):
     return delete_item(id)
 
 if __name__ == "__main__":
-    app.run(debug=True, host=ip_addr, port=port)
+    app.run(debug=True, host=ip_addr, port=int_port)
