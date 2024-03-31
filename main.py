@@ -9,6 +9,12 @@ import subprocess
 import os
 import socket
 
+import argparse
+
+parser = argparse.ArgumentParser("MaxMeds")
+parser.add_argument("--host-port", "--port", required=False, default=20080, help="Specifies what port to use for the server")
+parser.add_argument("--wsgi-port", required=False, help="Specifies what port to give out to other devices (ex. what to replace the 5000 in <IP_ADDRESS>:5000 with)")
+
 app = Flask(__name__)
 CORS(app)
 
@@ -32,9 +38,17 @@ def get_ip_addr():
     print("IP ADDRESS:", ip_addr)
     return ip_addr
 
+args = parser.parse_args().__dict__
+
+#Get setup stuff for wsgi/application
 ip_addr = get_ip_addr()
-int_port = 20081
-port=20080
+#application port data
+int_port = int(args["host_port"]) if "host_port" in args else 20080
+#wsgi port data
+port = int_port
+if "wsgi_port" in args:
+    if type(args["wsgi_port"]) is not type(None):
+        port = int(args["wsgi_port"])
 
 def convert_timestamp(time:int):
     t = datetime.fromtimestamp(time/1000)
