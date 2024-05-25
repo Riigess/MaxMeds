@@ -40,7 +40,6 @@ def get_ip_addr():
         ip_addr = ipcon[ipcon.index('192.168.15'):].split(' ')[0]
     elif '172.22.0.' in ipcon:
         ip_addr = ipcon[ipcon.index('172.22.0.'):].split(' ')[0]
-    print("IP ADDRESS:", ip_addr)
     return ip_addr
 
 # args = parser.parse_args().__dict__
@@ -97,14 +96,12 @@ def index():
     if request.method == 'GET':
         return render_template('index.html').replace("<IP_ADDRESS>:5000", f"{ip_addr}:{port}")
     elif request.method == 'POST':
-        print(request.headers)
         t = request.headers['timestamp']
         date_arr = t.split(' ')[0].split('-')
         date_arr += t.split(' ')[1].split(':')
         date_arr = [int(i) for i in date_arr]
         date_arr[0] += 1
         t = datetime(date_arr[2], date_arr[0], date_arr[1], date_arr[3], date_arr[4], date_arr[5])
-        print("DATETIME: ", t)
         med = request.headers['medication']
         # format_str = t.strftime("%Y-%m-%d %H:%M:%S")
         format_str = t.timestamp() * 1000
@@ -168,11 +165,9 @@ def gabapentin():
 @app.route('/static/images/<image_name>')
 def get_image(image_name:str):
     if '.png' in image_name:
-        print('listdir:', os.listdir('./static/images/'))
         if image_name in os.listdir('./static/images/'):
             f = open('static/images/' + image_name, 'rb')
             d = f.read()
-            # print("Return data: ", d)
             f.close()
             return d
     return b''
@@ -186,15 +181,28 @@ def delete_item(id:int):
     cur = conn.cursor()
     cur.execute(f"SELECT * FROM MaxMeds WHERE id={id}")
     d = cur.fetchall()
-    print(f"\t{id} data:", d)
     cur.execute(f"DELETE FROM MaxMeds WHERE id={id}")
     conn.commit()
     return {"code":200}
 
 @app.route('/delete/<id>')
 def delete_by_id(id:int):
-    print(f"Queuing {id} for deletion")
     return delete_item(id)
 
 if __name__ == "__main__":
     app.run(debug=True, host=ip_addr, port=int_port)
+
+#################################
+#          ENDPOINTS            #
+#################################
+
+# [GET] /delete/<id>
+# [GET] /static/images/<image_name>
+# [GET] /all/<med_name>
+# [GET] /trazadone
+#    - Returns: all references to when trazadone was taken in {"data": [[id,med_name,timestamp], [id,med_name,timestamp]]} format
+# [GET] /gabapentin
+# [GET] /history.js
+# [GET] /js-api.js
+# [GET] /index.css
+# [GET,POST] /
