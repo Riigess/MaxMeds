@@ -8,9 +8,22 @@ from datetime import datetime
 import subprocess
 import os
 import socket
+import yaml
+
+# import argparse
+
+# parser = argparse.ArgumentParser("MaxMeds")
+# parser.add_argument("--host-port", "--port", required=False, default=20080, help="Specifies what port to use for the server")
+# parser.add_argument("--wsgi-port", required=False, help="Specifies what port to give out to other devices (ex. what to replace the 5000 in <IP_ADDRESS>:5000 with)")
 
 app = Flask(__name__)
 CORS(app)
+
+def get_config():
+    f = open("settings.yml", "r")
+    d = yaml.safe_load(f.read())
+    f.close()
+    return d
 
 #Get device IP Address
 def get_ip_addr():
@@ -20,8 +33,6 @@ def get_ip_addr():
     else:
         ipcon = str(subprocess.run('/usr/sbin/ifconfig', capture_output=True).stdout)[2:-1]
     ipcon = ipcon.replace("\\r", "").replace("\\n", "\n").replace("\n\n\n", "\n").replace("\n\n", "\n")
-    # ip_addr = ipcon[ipcon.index('IPv4 Address'):ipcon.index('Subnet')].split(": ")[1].split("\n")[0]
-    # ip_addr = '192.168.15.39' #I don't like this, but it needs to get the host adapter's IP address...maybe I can just do a pass-through from Docker?
     ip_addr = ''
     if '10.0.1' in ipcon:
         ip_addr = ipcon[ipcon.index('10.0.1'):].split(' ')[0]
@@ -29,16 +40,23 @@ def get_ip_addr():
         ip_addr = ipcon[ipcon.index('192.168.15'):].split(' ')[0]
     elif '172.22.0.' in ipcon:
         ip_addr = ipcon[ipcon.index('172.22.0.'):].split(' ')[0]
-    print("IP ADDRESS:", ip_addr)
     return ip_addr
 
+# args = parser.parse_args().__dict__
+args = get_config()
+
+#Get setup stuff for wsgi/application
 ip_addr = get_ip_addr()
-port = 20080
+#application port data
+int_port = int(args["host-port"]) if "host-port" in args else 20080
+#wsgi port data
+port = int_port
+if "wsgi-port" in args:
+    if type(args["wsgi-port"]) is not type(None):
+        port = int(args["wsgi-port"])
 
 def convert_timestamp(time:int):
     t = datetime.fromtimestamp(time/1000)
-	# mdy = t.split(' ')[0].split('-')
-	# new_timestamp = '-'.join([mdy[-1], mdy[0], mdy[1]]) + 'T' + t.split(' ')[1]
     new_timestamp = t.strftime("%Y-%m-%d %H:%M:%S")
     return new_timestamp
 
@@ -78,14 +96,12 @@ def index():
     if request.method == 'GET':
         return render_template('index.html').replace("<IP_ADDRESS>:5000", f"{ip_addr}:{port}")
     elif request.method == 'POST':
-        print(request.headers)
         t = request.headers['timestamp']
         date_arr = t.split(' ')[0].split('-')
         date_arr += t.split(' ')[1].split(':')
         date_arr = [int(i) for i in date_arr]
         date_arr[0] += 1
         t = datetime(date_arr[2], date_arr[0], date_arr[1], date_arr[3], date_arr[4], date_arr[5])
-        print("DATETIME: ", t)
         med = request.headers['medication']
         # format_str = t.strftime("%Y-%m-%d %H:%M:%S")
         format_str = t.timestamp() * 1000
@@ -149,11 +165,9 @@ def gabapentin():
 @app.route('/static/images/<image_name>')
 def get_image(image_name:str):
     if '.png' in image_name:
-        print('listdir:', os.listdir('./static/images/'))
         if image_name in os.listdir('./static/images/'):
             f = open('static/images/' + image_name, 'rb')
             d = f.read()
-            # print("Return data: ", d)
             f.close()
             return d
     return b''
@@ -167,15 +181,28 @@ def delete_item(id:int):
     cur = conn.cursor()
     cur.execute(f"SELECT * FROM MaxMeds WHERE id={id}")
     d = cur.fetchall()
-    print(f"\t{id} data:", d)
     cur.execute(f"DELETE FROM MaxMeds WHERE id={id}")
     conn.commit()
     return {"code":200}
 
 @app.route('/delete/<id>')
 def delete_by_id(id:int):
-    print(f"Queuing {id} for deletion")
     return delete_item(id)
 
 if __name__ == "__main__":
-    app.run(debug=True, host=ip_addr, port=port)
+    app.run(debug=True, host=ip_addr, port=int_port)
+
+#################################
+#          ENDPOINTS            #
+#################################
+
+# [GET] /delete/<id>
+# [GET] /static/images/<image_name>
+# [GET] /all/<med_name>
+# [GET] /trazadone
+#    - Returns: all references to when trazadone was taken in {"data": [[id,med_name,timestamp], [id,med_name,timestamp]]} format
+# [GET] /gabapentin
+# [GET] /history.js
+# [GET] /js-api.js
+# [GET] /index.css
+# [GET,POST] /
